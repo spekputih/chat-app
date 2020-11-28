@@ -140,7 +140,7 @@
                     
                     <% }else{ %>
                         <div class="chat-log-box message-<%= chat.to %>">
-                            <div id="<%= message.from %>-<%=index%>" class="chat-box-other">
+                            <div id="chat-box-<%= message.from %>-<%=index%>" class="chat-box-other">
                                 <h6 class="name"><%= message.from %></h6>
                                 <p class="message"><%=message.message%></p>  
                                 <span class="time-chat">11:20</span>                       

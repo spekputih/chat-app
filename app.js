@@ -80,6 +80,7 @@ io.use(function(socket, next){
 	sessionOptions(socket.request, socket.request.res, next)
 })
 let users = {}
+let isStatus = ''
 io.on("connection", (socket)=>{
 	if (socket.request.session.user){
 		
@@ -94,7 +95,8 @@ io.on("connection", (socket)=>{
 			let chatterArray = [data.to, data.username]
 			let newArray = chatterArray.sort()
 			try {
-				let channel = await chatsCollection.findOne({chatter1: newArray[0], chatter2: newArray[1]})
+				let channel = await chatsCollection.findOne({chatter1: newArray[0], chatter2: newArray[1]}) 
+				isStatus = 'sending'
 				if(channel){
 					await chatsCollection.updateOne({
 						chatter1: newArray[0],
@@ -106,7 +108,7 @@ io.on("connection", (socket)=>{
 								from: data.username,
 								avatar: data.avatar,
 								to: data.to,
-								isStatus: "sending",
+								isStatus: isStatus,
 								timeStamp: new Date()
 							}
 						}
@@ -121,7 +123,7 @@ io.on("connection", (socket)=>{
 							from: data.username,
 							avatar: data.avatar,
 							to: data.to,
-							isStatus: 'sending',
+							isStatus: isStatus,
 							timeStamp: new Date() }
 						]
 					}
@@ -131,17 +133,18 @@ io.on("connection", (socket)=>{
 				
 				if(users[data.to]){
 					// console.log(data.to)
+					
 					if(!exist){
 						io.to(users[data.to].emit("addChannel", {
 							exist: exist,
 							from: data.username,
-							message: data.message
+							message: data.message,
 						}))
 					}else{
 						io.to(users[data.to].emit("updateDescription", {
 							exist: exist,
 							from: data.username,
-							message: data.message
+							message: data.message,
 						}))
 					}
 					// io.to(users[data.to].emit("privateMessage", {

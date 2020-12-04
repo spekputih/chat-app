@@ -60,14 +60,11 @@ const channelCall = function(){
             validateChannel(channel, key)
             status = [true, channel.id.substr(5, channel.id.length)]
                 
-        })
-        
-    })
-    
+        })        
+    })    
     function getCurrentChannel(id) {
             return document.querySelector(`#${id}`)
-        }
-        
+        }        
     function validateChannel(channel, key){
             
             let current = channel
@@ -78,10 +75,7 @@ const channelCall = function(){
             let chatLog = document.getElementById(`chatLog-${channel.id.substr(5, channel.id.length)}`)
             if(current != previous ){
                 channel.classList.add("active")
-
-                currentChat.classList.add("show")
-                
-                   
+                currentChat.classList.add("show")                                   
                 input.focus()
                 chatLog.scrollTop = chatLog.scrollHeight
                 if(previous && previousChat){
@@ -89,9 +83,7 @@ const channelCall = function(){
                     previousChat.classList.remove("show")
                 }
                 previous = current
-                previousChat = currentChat
-               
-        
+                previousChat = currentChat                       
             }
             if(updatePosition && previous && previousChat){
                 if(previous != current){
@@ -122,8 +114,7 @@ classCall(defaultChannel, false)
 
 let prevNum 
 let currentNum
-function update(){
-    
+function update(){   
     let channels = document.querySelectorAll(".channel-information")
     let show = false
     prevNum = channels.length
@@ -131,10 +122,6 @@ function update(){
         channelCall()
     }
     prevNum = currentNum
-    
-
-    
-
 }
 update()
 function addChannelAndSection(newUsername, message){
@@ -167,9 +154,7 @@ function addChannelAndSection(newUsername, message){
             </div>
         </div>
     </div>`)
-
     chatSection.insertAdjacentHTML("beforeend", `<section id="chat-${newUsername}" class="align chat show">
-        
     <div class="align chat-header">
         <div class="chat-profile">
             <img src="images/user.png" height="40" width="40" alt="">
@@ -211,8 +196,14 @@ function addChannelAndSection(newUsername, message){
 
 </div>
 </section>`)
-
 }
+
+socket.on("addChannel", (data)=>{
+    addChannelAndSection(data.from, data.message)
+    let formInput = document.querySelector(`#input-${data.from}`)
+    update()
+    formInput.focus()
+})
 
 modalForm.addEventListener("submit", function(e){
     e.preventDefault()

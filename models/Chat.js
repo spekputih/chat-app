@@ -22,11 +22,12 @@ ChatLog.prototype.getMessages = function(msgCount){
                     console.log(i, msg.length, msgCount + numberOfMessageRetrieve, msgCount, numberOfMessageRetrieve)
 
                     arrayMsg.push({
+                        messageId: msg[i].key,
                         message: msg[i].message,
                         from: msg[i].from,
                         avatar: msg[i].avatar,
                         to: msg[i].to,
-                        isRead: msg[i].isRead,
+                        isStatus: msg[i].isStatus,
                         timeStamp: msg[i].timeStamp
                     })
                     

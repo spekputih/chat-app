@@ -91,9 +91,10 @@ io.on("connection", (socket)=>{
 		socket.emit("welcome", {username: user.username, avatar: user.avatar})
 
 		let exist = false
-		socket.on("sendFromBrowser", async (data) => {
+		socket.on("sendFromBrowser", async (data, response) => {
 			let chatterArray = [data.to, data.username]
 			let newArray = chatterArray.sort()
+			let messageId = `${newArray[0]}-${newArray[1]}-` + Math.random().toString(36).substring(2, 8) + "-" + new Date().getTime()
 			try {
 				let channel = await chatsCollection.findOne({chatter1: newArray[0], chatter2: newArray[1]}) 
 				isStatus = 'sending'
@@ -104,6 +105,7 @@ io.on("connection", (socket)=>{
 					},
 						{$push: {
 							msgInfo: {
+								key: messageId,
 								message: data.message,
 								from: data.username,
 								avatar: data.avatar,
@@ -119,6 +121,7 @@ io.on("connection", (socket)=>{
 						chatter1: newArray[0],
 						chatter2: newArray[1],
 						msgInfo: [{
+							key: messageId,
 							message: data.message,
 							from: data.username,
 							avatar: data.avatar,
@@ -140,12 +143,20 @@ io.on("connection", (socket)=>{
 							from: data.username,
 							message: data.message,
 						}))
+						response({
+							messageId: messageId,
+							isStatus: "received"
+						})
 					}else{
 						io.to(users[data.to].emit("updateDescription", {
 							exist: exist,
 							from: data.username,
 							message: data.message,
 						}))
+						response({
+							messageId: messageId,
+							isStatus: "received"
+						})
 					}
 					// io.to(users[data.to].emit("privateMessage", {
 					// 	message: data.message,
@@ -155,10 +166,37 @@ io.on("connection", (socket)=>{
 					io.to(users[data.to].emit("privateMessageClass", {
 						message: data.message,
 						from: data.username,
-						avatar: data.avatar}))
+						avatar: data.avatar,
+						messageId: messageId
+					}, async (isReceived)=>{
+						if(isReceived){
+							await chatsCollection.findOneAndUpdate(
+								{ chatter1: newArray[0], chatter2: newArray[1]},
+								{ $set: { "msgInfo.$[elem].isStatus" : 'received' } },
+								{
+									arrayFilters: [ { "elem.key": messageId} ]
+								}
+							)						
+							response({
+								messageId: messageId,
+								isStatus: "received"
+							})
+						}
+					}))
 					
 				}else{
-					console.log("offline")
+					console.log("offline", newArray)
+					await chatsCollection.findOneAndUpdate(
+						{ chatter1: newArray[0], chatter2: newArray[1]},
+						{ $set: { "msgInfo.$[elem].isStatus" : 'sent' } },
+						{
+							arrayFilters: [ { "elem.key": messageId} ]
+						}
+					)
+					response({
+						messageId: messageId,
+						isStatus: "sent"
+					})
 				}
 				
 			} catch (error) {
@@ -193,6 +231,27 @@ io.on("connection", (socket)=>{
 		})
 		socket.on("connect", ()=>{
 			socket.broadcast.emit("userOnline", {status: "online", from: user.username})
+		})
+		socket.on("hasReadUpdate", async (data)=>{
+			console.log(data)
+			let read = await chatsCollection.findOneAndUpdate(
+				{ chatter1: data.chatters[0], chatter2: data.chatters[1]},
+				{ $set: { "msgInfo.$[elem].isStatus" : "read" } },
+				{ arrayFilters: [ { "elem.key": data.messageId } ] }
+			)
+			console.log(read)
+			if(users[data.to]){
+				io.to(users[data.to].emit("readChat", {messageId: data.messageId ,isStatus: "read"}))
+			}
+		})
+		socket.on("hasReceivedUpdate", async (data)=>{
+			console.log(data)
+			let received = await chatsCollection.findOneAndUpdate(
+				{ chatter1: data.chatters[0], chatter2: data.chatters[1] },
+				{ $set: { "msgInfo.$[elem].isStatus" : "update"} },
+				{ arrayFilters: [ {"elem.key" : data.messageId} ] }
+				)
+			console.log(received)
 		})
 		
 	}

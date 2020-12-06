@@ -47,7 +47,6 @@ exports.home = async function(req, res){
             }
             return 0
         }
-        
         res.render("index", {data: data})
     }else{
         res.redirect("/login")

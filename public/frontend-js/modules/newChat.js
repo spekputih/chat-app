@@ -1,6 +1,7 @@
 import Noty from "./Noty"
 import moment from "moment"
 import axios from "axios"
+import { response } from "express"
 
 export default class Chat {
     constructor(targetUser){
@@ -60,19 +61,14 @@ export default class Chat {
     // methods
     chatBoxAddIntersection(){
         this.observer = new IntersectionObserver((entries)=>{
-            
             if(entries.length > 0 ){
-            //    console.log(entries[0].target.id, entries)
+               console.log(entries[0].target.id, entries)
                for (let i = 0; i < entries.length; i++) {
-                    if(entries[0].intersectionRatio == 0 && this.targetUser && this.username){
-                        this.hasReceivedChat(entries[i].target.id)
-                        
-                    }
-                    if(entries[i].isIntersecting && this.targetUser && this.username){
-                        this.hasReadChat(entries[i].target.id)
-                        this.unObserve(entries[i].target.id)    
+                    if(entries[i].isIntersecting){
+                        this.hasReadChat(entries[i].target.id)    
                     }  
-               }               
+               }
+               
             }
         }, {
             root: this.chatLog,
@@ -83,22 +79,15 @@ export default class Chat {
             console.log("chatbox observed", chatBox)
         })
     }
-    unObserve(messageId){
+    hasReadChat(messageId){
+        this.chatters = [this.username, this.targetUser]
+        this.chatters.sort()
+        this.socket.emit('hasReadUpdate', {messageId: messageId, chatters: this.chatters})
         this.singleChatOther = document.getElementById(messageId)
-        console.log("single chat unobserve", this.singleChatOther)
-        this.observer.unobserve(this.singleChatOther)
+        console.log("single chat unobserve",this.singleChatOther)
+        // this.observer.unobserve(this.singleChatOther)
+        
     }
-    hasReadChat(messageId){     
-        this.chatters = [this.username, this.targetUser]
-        this.chatters.sort()   
-        this.socket.emit('hasReadUpdate', {messageId: messageId, chatters: this.chatters, to: this.targetUser})       
-    }
-    hasReceivedChat(messageId){
-        this.chatters = [this.username, this.targetUser]
-        this.chatters.sort()   
-        this.socket.emit('hasReadUpdate', {messageId: messageId, chatters: this.chatters, to: this.targetUser})
-    }
-
     retrieveMsgOnScroll(){
         if(this.chatLog.scrollTop == 0){
             let previousHeight = this.chatLog.scrollHeight
@@ -109,45 +98,16 @@ export default class Chat {
             name.sort()
             if(this.isRemainingMessageExist){
                 axios.post("/get-chat-message", {queryName: name, count: this.messageCount} ).then((response)=>{
-                    response.data[0].forEach((data, index)=>{
-                        if(data.from === this.username){
-                            if(data.isStatus == "sent"){
-                                console.log(index)
-                                this.chatLog.insertAdjacentHTML("afterbegin", 
+                    response.data[0].forEach((data)=>{
+                            this.chatLog.insertAdjacentHTML("afterbegin", 
                                 `<div class="chat-log-box">
-                                    <div id="${data.messageId}" class="chat-box-me">
+                                    <div class="chat-box-me">
                                         <p>${data.message}</p>
-                                        <span class="time-chat"><span class="tc">11:20</span>
-                                        <i class="fas fa-smile-wink" aria-hidden="true"></i>
-                                        </span>
+                                        <span class="time-chat"><span class="tc">11:20</span></span>
                                     </div>
                                     <div class="box-clear"></div>
                                 </div>`)
-                            }else{
-                                console.log(index)
-                                this.chatLog.insertAdjacentHTML("afterbegin", 
-                                `<div class="chat-log-box">
-                                    <div id="${data.messageId}" class="chat-box-me">
-                                        <p>${data.message}</p>
-                                        <span class="time-chat"><span class="tc">11:20</span>
-                                        <i class="fas fa-smile-wink ${data.isStatus}" aria-hidden="true"></i>
-                                        </span>
-                                    </div>
-                                    <div class="box-clear"></div>
-                                </div>`)
-                            }
-                        }else{
-                            console.log(index)
-                            this.chatLog.insertAdjacentHTML("afterbegin", `<div class="chat-log-box message-${data.to}">
-                            <div id="${data.messageId}" class="chat-box-other other-${data.from}">
-                                <h6 class="name">${data.from}</h6>
-                                <p class="message">${data.message}</p>   
-                                <span class="time-chat"><span class="tc">11:20</span></span>                     
-                            </div>
-                            <div class="box-clear"></div>`)
-                        }
-                           
-                    })
+                        })
                     if(response.data[0].length === 0){
                         this.isRemainingMessageExist = false
                     }
@@ -187,67 +147,49 @@ export default class Chat {
                 avatar: this.avatar,
                 to: this.targetUser
             }, (response)=>{
-                console.log(this.formInput.value)
+                console.log(response.isStatus,response)
                 this.response = response.messageId
                 this.isStatus = response.isStatus
-                if (this.isStatus == "sent") {
-                    console.log(this.isStatus)
-                    this.chatLog.insertAdjacentHTML("beforeend", `<div class="chat-log-box">
-                    <div id="${this.response}" class="chat-box-me">
-                    <p>${this.formInput.value}</p>
-                    <span class="time-chat"><span class="tc">11:20</span>
-                    <i class="fas fa-smile-wink" aria-hidden="true"></i>
-                    </span>
-                    </div>
-                    <div class="box-clear"></div>
-                    </div>`)
-                    this.descriptionChannel.previousValue = this.formInput.value
-                    this.descriptionStatusUpdate(this.formInput.value, this.targetUser)        
-                    console.log(this.username)
-                    this.chatLog.scrollTop = this.chatLog.scrollHeight
-                    this.formInput.value = ""
-                    this.formInput.focus()
-                }else if(this.isStatus == "received"){
-                    console.log(this.isStatus)
-                    this.chatLog.insertAdjacentHTML("beforeend", `<div class="chat-log-box">
-                    <div id="${this.response}" class="chat-box-me">
-                    <p>${this.formInput.value}</p>
-                    <span class="time-chat"><span class="tc">11:20</span>
-                        <i class="fas fa-smile-wink received" aria-hidden="true"></i>
-                    </span>
-                    </div>
-                    <div class="box-clear"></div>
-                    </div>`)
-                    this.descriptionChannel.previousValue = this.formInput.value
-                    this.descriptionStatusUpdate(this.formInput.value, this.targetUser)        
-                    console.log(this.username)
-                    this.chatLog.scrollTop = this.chatLog.scrollHeight
-                    this.formInput.value = ""
-                    this.formInput.focus()
-                }else{
-                    console.log(this.isStatus)
-                    this.chatLog.insertAdjacentHTML("beforeend", `<div class="chat-log-box">
-                    <div id="${this.response}" class="chat-box-me">
-                    <p>${this.formInput.value}</p>
-                    <span class="time-chat"><span class="tc">11:20</span>
-                    </span>
-                    </div>
-                    <div class="box-clear"></div>
-                    </div>`)
-                    this.descriptionChannel.previousValue = this.formInput.value
-                    this.descriptionStatusUpdate(this.formInput.value, this.targetUser)        
-                    console.log(this.username)
-                    this.chatLog.scrollTop = this.chatLog.scrollHeight
-                    this.formInput.value = ""
-                    this.formInput.focus()
-                }
-                
+                let isStatusHTML
+            console.log(this.isStatus)
+            if (this.isStatus == "sent") {
+                console.log(this.isStatus)
+                isStatusHTML == `<div id="${this.response}" class="chat-box-me">
+                <p>${this.formInput.value}</p>
+                <span class="time-chat"><span class="tc">11:20<i class="fas fa-smile-wink" aria-hidden="true"></i></span>
+                </span>
+                </div>`
+            }else if(this.isStatus == "received"){
+                console.log(this.isStatus)
+                isStatusHTML == `<div id="${this.response}" class="chat-box-me ">
+                <p>${this.formInput.value}</p>
+                <span class="time-chat"><span class="tc">11:20<i class="fas fa-smile-wink received" aria-hidden="true"></i></span>
+                </span>
+                </div>`
+            }else{
+                console.log(this.isStatus)
+                isStatusHTML = `<div id="${this.response}" class="chat-box-me">
+                <p>${this.formInput.value}</p>
+                <span class="time-chat"><span class="tc">11:20</span>
+                </span>
+                </div>`
+            }
+            this.chatLog.insertAdjacentHTML("beforeend", `<div class="chat-log-box">
+            ${isStatusHTML}
+            <div class="box-clear"></div>
+            </div>`)
             })
             
-        
+        this.descriptionChannel.previousValue = this.formInput.value
         // this.updateDate()
         }
-        
+        console.log("to server",this.previousDescriptionValue)
+
+        this.descriptionStatusUpdate(this.formInput.value, this.targetUser)        
+        console.log(this.username)
+        this.chatLog.scrollTop = this.chatLog.scrollHeight
+        this.formInput.value = ""
+        this.formInput.focus()
         // console.log(this.chatLog.scrollTop)
     }
 
@@ -272,39 +214,8 @@ export default class Chat {
             // console.log("activity")
             this.sendActivityHandler(data)
         })
-
-        this.socket.on("readChat", (data)=>{
-            this.updateReadMessage(data)
-        })
         
 		
-    }
-
-    updateReadMessage(data){
-        
-        let element = document.getElementById(data.messageId)
-        console.log(element, data.messageId)
-        
-        if(element.children[1].children[1]){
-            
-            if(element.children[1].children[1].classList[2] != "read"){
-                console.log(element.children[1].children[1].classList[2])
-                if(element.children[1].children[1].classList[2] === "received"){
-                    element.children[1].children[1].classList.remove("received")
-                    element.children[1].children[1].classList.add("read")
-                }else if(element.children[1].children[1].classList[2] === "sent"){
-                    element.children[1].children[1].classList.remove("sent")
-                    element.children[1].children[1].classList.add("read")
-                }else if(element.children[1].children[1].classList[2] === undefined){
-                    element.children[1].children[1].classList.add("read")
-                }
-                
-            }
-        }
-        //     element.add("read")
-        // if(element[2] != "read"){
-            
-        // }
     }
 
     userOnlineHandler(data){
@@ -356,10 +267,8 @@ export default class Chat {
             <div class="box-clear"></div>`)
             this.descriptionChannel.previousValue = data.message
             this.descriptionStatusUpdate(data.message, data.from)
-            this.singleChatBox = document.getElementById(data.messageId)
-            this.observer.observe(this.singleChatBox)
+            
         }
-        
         console.log("from server", this.descriptionChannel.previousValue)
         this.chatLog.scrollTop = this.chatLog.scrollHeight
     

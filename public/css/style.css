@@ -604,11 +604,11 @@ input:focus{
     position: static;
     
 }
-.time-chat i .read{
-    color: #248348;
+.read{
+    color: #02aa43;
 }
 
-.time-chat i .reach{
+.received{
     color: turquoise;
 }
 

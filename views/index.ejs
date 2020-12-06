@@ -131,16 +131,24 @@
                 <% chat.LatestMsg.forEach(function(message, index){ %>
                     <% if(message.from === user.username){ %>
                         <div class="chat-log-box">
-                            <div class="chat-box-me">
+                            <div id="<%=message.key%>" class="chat-box-me">
                                 <p><%=message.message%></p >
-                                <span class="time-chat"><span class="tc">11:20</span><i class="fas fa-smile-wink" aria-hidden="true"></i></span>
+                                <span class="time-chat"><span class="tc">11:20</span>
+                                <% if(message.isStatus == "sent"){ %>
+                                    <i class="fas fa-smile-wink" aria-hidden="true"></i>
+                                <% }else if(message.isStatus == "received"){ %>
+                                    <i class="fas fa-smile-wink received" aria-hidden="true"></i>
+                                <% }else if(message.isStatus == "read"){ %>
+                                    <i class="fas fa-smile-wink read" aria-hidden="true"></i>
+                                <% } %>
+                                </span>
                             </div>
                             <div class="box-clear"></div>
                         </div>
                     
                     <% }else{ %>
                         <div class="chat-log-box message-<%= chat.to %>">
-                            <div id="chat-box-<%= message.from %>-<%=index%>" class="chat-box-other">
+                            <div id="<%=message.key%>" class="chat-box-other other-<%= message.from %>">
                                 <h6 class="name"><%= message.from %></h6>
                                 <p class="message"><%=message.message%></p>  
                                 <span class="time-chat">11:20</span>                       
@@ -184,7 +192,6 @@
                     </div>
                 </form>
             </div>
-            
         </div>
     </div>
     </div>
@@ -192,5 +199,6 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <script src="main-bundle.js"></script>
+    <!-- <script src="/js/frontend-js/main.js"></script> -->
 </body>
 </html>

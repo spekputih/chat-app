@@ -200,12 +200,9 @@ function addChannelAndSection(newUsername, message){
 
 socket.on("addChannel", (data)=>{
     addChannelAndSection(data.from, data.message)
-<<<<<<< HEAD
-=======
     let formInput = document.querySelector(`#input-${data.from}`)
     update()
     formInput.focus()
->>>>>>> newmain
 })
 
 modalForm.addEventListener("submit", function(e){

@@ -3,7 +3,7 @@ import Index from "./modules/index"
 
 Index()
 
-import moment from "moment"
+
 
 console.log(moment)
 

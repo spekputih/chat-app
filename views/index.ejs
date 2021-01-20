@@ -66,7 +66,8 @@
                     <div class="channel-detail">
                         <div class="channel-title">
                             <h6 class="title"><%=channel.to%></h6>
-                            <span id="date-<%= channel.to %>" class="time"></span>
+                            <span id="date-<%= channel.to %>" class="time"><%=("0" + channel.lastChat.getHours()).slice(-2) %>:<%= ("0" + channel.lastChat.getMinutes()).slice(-2) %></span>
+                            <% console.log(channel) %>
                         </div>
                         <div class="channel-description">
                             <% if(channel.LatestMsg[data[index].LatestMsg.length - 1].message.length > 30){ %>
@@ -133,7 +134,8 @@
                         <div class="chat-log-box">
                             <div id="<%=message.key%>" class="chat-box-me">
                                 <p><%=message.message%></p >
-                                <span class="time-chat"><span class="tc">11:20</span>
+                                    <%console.log('message', message)%>
+                                <span class="time-chat"><span class="tc"><%= ("0" + message.timeStamp.getHours()).slice(-2) %>:<%= ("0" + message.timeStamp.getMinutes()).slice(-2) %></span>
                                 <% if(message.isStatus == "sent"){ %>
                                     <i class="fas fa-smile-wink" aria-hidden="true"></i>
                                 <% }else if(message.isStatus == "received"){ %>
@@ -151,7 +153,7 @@
                             <div id="<%=message.key%>" class="chat-box-other other-<%= message.from %>">
                                 <h6 class="name"><%= message.from %></h6>
                                 <p class="message"><%=message.message%></p>  
-                                <span class="time-chat">11:20</span>                       
+                                <span class="time-chat"><%= ("0" + message.timeStamp.getHours()).slice(-2) %>:<%= ("0" + message.timeStamp.getMinutes()).slice(-2) %></span>                       
                             </div>
                             <div class="box-clear"></div>
                         </div>

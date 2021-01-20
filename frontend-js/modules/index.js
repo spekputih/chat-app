@@ -227,7 +227,7 @@ modalForm.addEventListener("submit", function(e){
         previousChat = updateChat
         previous = updateChannel
         updatePosition = true
-        
+    
         update()
             username[0].value = ""
             formInput.focus()

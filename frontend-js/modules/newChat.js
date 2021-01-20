@@ -181,6 +181,7 @@ export default class Chat {
     sendMessageToServer(){
         
         if(this.formInput.value != "" && this.username != this.targetUser){
+
             this.socket.emit("sendFromBrowser", {
                 username: this.username,
                 message: this.formInput.value,
@@ -201,12 +202,7 @@ export default class Chat {
                     </div>
                     <div class="box-clear"></div>
                     </div>`)
-                    this.descriptionChannel.previousValue = this.formInput.value
-                    this.descriptionStatusUpdate(this.formInput.value, this.targetUser)        
-                    console.log(this.username)
-                    this.chatLog.scrollTop = this.chatLog.scrollHeight
-                    this.formInput.value = ""
-                    this.formInput.focus()
+                    
                 }else if(this.isStatus == "received"){
                     console.log(this.isStatus)
                     this.chatLog.insertAdjacentHTML("beforeend", `<div class="chat-log-box">
@@ -218,12 +214,7 @@ export default class Chat {
                     </div>
                     <div class="box-clear"></div>
                     </div>`)
-                    this.descriptionChannel.previousValue = this.formInput.value
-                    this.descriptionStatusUpdate(this.formInput.value, this.targetUser)        
-                    console.log(this.username)
-                    this.chatLog.scrollTop = this.chatLog.scrollHeight
-                    this.formInput.value = ""
-                    this.formInput.focus()
+                    
                 }else{
                     console.log(this.isStatus)
                     this.chatLog.insertAdjacentHTML("beforeend", `<div class="chat-log-box">
@@ -234,13 +225,14 @@ export default class Chat {
                     </div>
                     <div class="box-clear"></div>
                     </div>`)
-                    this.descriptionChannel.previousValue = this.formInput.value
+                    
+                }
+                this.descriptionChannel.previousValue = this.formInput.value
                     this.descriptionStatusUpdate(this.formInput.value, this.targetUser)        
                     console.log(this.username)
                     this.chatLog.scrollTop = this.chatLog.scrollHeight
                     this.formInput.value = ""
                     this.formInput.focus()
-                }
                 
             })
             

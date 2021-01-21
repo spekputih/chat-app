@@ -2,7 +2,7 @@
 
 ## Login - Register Page
 
-![login-register-page](https://drive.google.com/file/d/1t-_SOy0rFor4QH8GOlH8ZZWEv0ERBvoC/view?usp=sharing)
+![login-register-page](https://drive.google.com/file/d/1t-_SOy0rFor4QH8GOlH8ZZWEv0ERBvoC/preview)
 
 ## Chat Page
 

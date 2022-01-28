@@ -1,6 +1,6 @@
 # chat-app
 
-The app is attended to copy the functionality of whatsapp web application by using Node.js, Express.js, MongoDB and Socket.IO.
+The app was intended to copy the functionality of whatsapp web application by using Node.js, Express.js, MongoDB and Socket.IO.
 
 ### Here are some of the application screenshots to give the overview on how the application works and function
 #### Login - Register Page
